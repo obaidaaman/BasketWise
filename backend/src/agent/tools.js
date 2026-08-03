@@ -1,4 +1,7 @@
-const add = tool(async function ({ a, b }) {
+import { Tool, tool } from "@langchain/core/tools"
+import { z } from "zod"
+
+ const add = tool(async function ({ a, b }) {
     return a + b;
 },
     {
@@ -11,7 +14,7 @@ const add = tool(async function ({ a, b }) {
     });
 
 
-const sub = tool(async function ({ a, b }) {
+ const sub = tool(async function ({ a, b }) {
     return a - b;
 },
     {
@@ -25,7 +28,7 @@ const sub = tool(async function ({ a, b }) {
 
 
 
-const multiply = tool(async function ({ a, b }) {
+ const multiply = tool(async function ({ a, b }) {
     return a * b;
 },
     {
