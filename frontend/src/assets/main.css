@@ -1,14 +1,51 @@
 @import "tailwindcss";
 
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 @theme {
-  --color-primary: #1a2942;
-  --color-secondary: #64748b;
-  --color-background: #f8f9fa;
-  --color-textMain: #1f2937;
+  --color-primary: #1B4332;
+  --color-primary-light: #2D6A4F;
+  --color-secondary: #4A5D4E;
+  --color-accent: #F59E0B;
+  --color-background: #FAFAF5;
+  --color-surface: #FFFFFF;
+  --color-textMain: #1F2937;
+  --color-textMuted: #6B7280;
+
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'DM Serif Display', serif;
 }
 
 @layer base {
   body {
     @apply bg-background text-textMain font-sans antialiased;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+/* Custom Utilities */
+.glass-nav {
+  @apply bg-white/80 backdrop-blur-md border-b border-gray-100;
+}
+
+.premium-card {
+  @apply bg-surface rounded-[20px] shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
 }

@@ -1,9 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-// Configure global axios defaults
-axios.defaults.baseURL = '/api'
-axios.defaults.withCredentials = true // Important for sending/receiving refresh token in cookies
+// Global axios defaults are configured in main.js
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -32,7 +30,7 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       try {
         const response = await axios.post('/auth/login', { email, password })
-        this.setAccessToken(response.data.accessToken)
+        this.setAccessToken(response.data.token) // Fix: backend returns { token }
         await this.fetchUser()
       } catch (err) {
         this.error = err.response?.data?.message || 'Login failed'
@@ -42,12 +40,12 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    async signup(email, password, name) {
+    async signup(email, password, username) { // Fix: parameter is username
       this.isLoading = true
       this.error = null
       try {
-        const response = await axios.post('/auth/signup', { email, password, name })
-        this.setAccessToken(response.data.accessToken)
+        const response = await axios.post('/auth/signup', { email, password, username })
+        this.setAccessToken(response.data.token) // Fix: backend returns { token }
         await this.fetchUser()
       } catch (err) {
         this.error = err.response?.data?.message || 'Signup failed'
@@ -60,7 +58,7 @@ export const useAuthStore = defineStore('auth', {
     async fetchUser() {
       try {
         const response = await axios.get('/auth/me')
-        this.user = response.data
+        this.user = response.data.user // Fix: backend might wrap user in { user }
       } catch (err) {
         this.user = null
         this.setAccessToken(null)
@@ -78,10 +76,15 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    logout() {
-      this.user = null
-      this.setAccessToken(null)
-      // Ideally call a backend endpoint to clear the refresh token cookie
+    async logout() {
+      try {
+        await axios.get('/auth/logout')
+      } catch (e) {
+        console.error('Logout error', e)
+      } finally {
+        this.user = null
+        this.setAccessToken(null)
+      }
     }
   }
 })

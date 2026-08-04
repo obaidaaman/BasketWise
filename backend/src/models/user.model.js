@@ -36,27 +36,27 @@ const UserSchema = new mongoose.Schema({
 const LocationSchema = new mongoose.Schema({
 
     userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "users",
-            required: true,
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
+        required: true,
+    },
     location: {
-            latitude: {
-                type: Number,
-                required: true
-            },
+        latitude: {
+            type: Number,
+            required: true
+        },
 
-            longitude: {
-                type: Number,
-                required: true
-            }
-        } ,
-    
-}, {timestamps : true} )
+        longitude: {
+            type: Number,
+            required: true
+        }
+    },
+
+}, { timestamps: true })
 
 const userModel = mongoose.model("users", UserSchema);
 
-const locationModel = mongoose.model("AddressModel", LocationSchema) 
+const locationModel = mongoose.model("address", LocationSchema);
 
-export default {userModel, locationModel}
+export { userModel, locationModel }
 
