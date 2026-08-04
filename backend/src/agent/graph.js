@@ -1,10 +1,11 @@
-import { conversationModel, messageModel } from "../models/chat.model.js";
+import { SystemMessage } from "@langchain/core/messages"
 import { ChatOpenAI } from "@langchain/openai"
 import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
 import { config } from "dotenv"
 import { MessagesAnnotation, StateGraph, START, END } from "@langchain/langgraph"
 import { tools } from "./tools.js";
 import { MemorySaver } from "@langchain/langgraph";
+import { systemPrompt } from "./prompts.js";
 config();
 
 const state = MessagesAnnotation;
@@ -29,16 +30,14 @@ const app = graph.compile({ checkpointer });
 
 const llmWithTools = model.bindTools(tools);
 
-console.log("Graph Compiled Successfully");
-
-
 
 async function chatbot(state) {
 
-    const response = await llmWithTools.invoke(state.messages);
+    const aiPrompt = new SystemMessage(
+        systemPrompt
+    );
 
-
-
+    const response = await llmWithTools.invoke([aiPrompt, ...state.messages]);
     return {
         messages: [response]
     };
