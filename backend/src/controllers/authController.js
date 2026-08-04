@@ -1,11 +1,8 @@
 import userModel from "../models/user.model.js";
 import crypto from "crypto";
-import dotenv from "dotenv";
+
 import config from "../config/config.js";
 import jwt from "jsonwebtoken";
-import { json } from "stream/consumers";
-import { ref } from "process";
-import { error } from "console";
 
 import sessionModel from "../models/session.model.js";
 

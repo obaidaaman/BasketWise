@@ -2,6 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import router from "./routes/auth.routes.js";
 import chatRouter from "./routes/chat.routes.js";
+import userRouter from "./routes/user.routes.js";
 const app = express();
 
 app.use(express.json());
@@ -13,5 +14,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", router);
 app.use("/api", chatRouter);
+app.use("/api", userRouter);
 
 export default app;

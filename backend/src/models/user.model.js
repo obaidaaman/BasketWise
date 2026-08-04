@@ -31,8 +31,32 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 
+
+
+const LocationSchema = new mongoose.Schema({
+
+    userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "users",
+            required: true,
+        },
+    location: {
+            latitude: {
+                type: Number,
+                required: true
+            },
+
+            longitude: {
+                type: Number,
+                required: true
+            }
+        } ,
+    
+}, {timestamps : true} )
+
 const userModel = mongoose.model("users", UserSchema);
 
+const locationModel = mongoose.model("AddressModel", LocationSchema) 
 
-export default userModel
+export default {userModel, locationModel}
 

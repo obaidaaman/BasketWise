@@ -16,3 +16,13 @@ export const chatSchema = z.object({
         .min(1, "Message cannot be empty")
         .max(2000, "Message too long")
 })
+
+
+
+
+export const locationSchema = z.object({
+    location: z.object({
+        latitude: z.number().min(-90).max(90),
+        longitude: z.number().min(-180).max(180)
+    })
+});
