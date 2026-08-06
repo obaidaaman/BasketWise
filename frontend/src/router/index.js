@@ -20,9 +20,23 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from, next) => {
+let isRefreshed = false
+
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
+  // On first load (page refresh), try to restore the session via refresh token
+  if (!isRefreshed) {
+    isRefreshed = true
+    if (!authStore.isAuthenticated) {
+      try {
+        await authStore.refreshToken()
+      } catch (e) {
+        // Refresh failed — user is genuinely logged out
+      }
+    }
+  }
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
   } else if ((to.name === 'login' || to.name === 'signup') && authStore.isAuthenticated) {

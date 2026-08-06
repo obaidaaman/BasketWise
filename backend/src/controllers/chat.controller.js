@@ -106,6 +106,7 @@ export async function chatbotController(req, res) {
             role: "assistant",
             content: aiResponse,
             status: "sent",
+            data: structured
 
         });
         conversations.lastMessage = aiResponse;
@@ -121,6 +122,46 @@ export async function chatbotController(req, res) {
         res.status(500).json({
             message: "Something went wrong",
             error: err.message
+        });
+    }
+}
+
+
+
+export async function getChatHistory(req, res) {
+    try {
+        const userId = req.user.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 30;
+        const skip = (page - 1) * limit;
+
+        const conversation = await conversationModel.findOne({ participants: userId });
+        if (!conversation) return res.status(200).json({ messages: [], hasMore: false });
+
+        const total = await messageModel.countDocuments({ conversationId: conversation._id });
+
+        const messages = await messageModel
+            .find({ conversationId: conversation._id })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        messages.reverse();
+
+        const formattedMessages = messages.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+            data: msg.data
+        }));
+
+        res.status(200).json({
+            messages: formattedMessages,
+            hasMore: skip + limit < total
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong",
+            error: error.message
         });
     }
 }

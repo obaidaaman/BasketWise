@@ -20,6 +20,26 @@ const ConversationSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+
+const ProductSchema = new mongoose.Schema({
+    id: String,
+    name: String,
+    brand: String,
+    price: {
+        mrp: Number,
+        offerPrice: Number,
+        savings: Number,
+    },
+    quantity: String,
+    inStock: Boolean,
+    platform: {
+        name: String,
+        deliveryTime: String,
+    },
+    deeplink: String,
+    image: String
+}, { _id: false });
+
 const MessageModel = new mongoose.Schema({
     conversationId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -34,6 +54,15 @@ const MessageModel = new mongoose.Schema({
     content: {
         type: String,
         required: true,
+    },
+
+    data: {
+        type: {
+            type: String,
+            default: "text"
+        },
+        products: [ProductSchema],
+        platforms: [String]
     },
     role: {
         type: String,

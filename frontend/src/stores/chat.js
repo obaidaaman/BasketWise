@@ -6,9 +6,42 @@ export const useChatStore = defineStore('chat', {
     messages: [], // Array of { role: 'user' | 'assistant', content: '', data?: {} }
     isLoading: false,
     error: null,
+    hasMore: false,
+    page: 1,
+    historyLoaded: false,
   }),
 
   actions: {
+    async loadHistory(page = 1) {
+      try {
+        const response = await axios.get(`/chat?page=${page}&limit=30`)
+
+        const formattedMessages = response.data.messages.map(msg => ({
+          role: msg.role,
+          content: msg.content,
+          data: msg.data // Include the products and structured data!
+        }))
+
+        if (page === 1) {
+          this.messages = formattedMessages
+        } else {
+          // Prepend older messages to the beginning
+          this.messages = [...formattedMessages, ...this.messages]
+        }
+
+        this.hasMore = response.data.hasMore
+        this.page = page
+        this.historyLoaded = true
+      } catch (err) {
+        console.error('Failed to load chat history:', err)
+      }
+    },
+
+    async loadOlderMessages() {
+      if (!this.hasMore || this.isLoading) return
+      await this.loadHistory(this.page + 1)
+    },
+
     async sendMessage(text) {
       // Optimistically add user message
       this.messages.push({
@@ -46,6 +79,9 @@ export const useChatStore = defineStore('chat', {
     
     clearChat() {
       this.messages = []
+      this.hasMore = false
+      this.page = 1
+      this.historyLoaded = false
     }
   }
 })

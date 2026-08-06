@@ -1,10 +1,10 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 import { useLocationStore } from '@/stores/location'
-import { Send, MapPinOff, ArrowDown } from 'lucide-vue-next'
+import { Send, MapPinOff, Loader2 } from 'lucide-vue-next'
 import AppHeader from '@/components/AppHeader.vue'
 import LocationModal from '@/components/LocationModal.vue'
 import ChatMessage from '@/components/ChatMessage.vue'
@@ -17,11 +17,15 @@ const locationStore = useLocationStore()
 const messageInput = ref('')
 const showLocationModal = ref(false)
 const chatContainer = ref(null)
+const loadingOlder = ref(false)
 
-const scrollToBottom = () => {
+const scrollToBottom = (smooth = true) => {
   nextTick(() => {
     if (chatContainer.value) {
-      chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+      chatContainer.value.scrollTo({
+        top: chatContainer.value.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto'
+      })
     }
   })
 }
@@ -32,26 +36,75 @@ const handleSend = async () => {
   const text = messageInput.value
   messageInput.value = ''
   
-  scrollToBottom()
+  scrollToBottom(true)
   
   try {
     await chatStore.sendMessage(text)
-    scrollToBottom()
+    scrollToBottom(true)
   } catch (e) {
     console.error('Chat error', e)
   }
 }
 
-onMounted(() => {
-  // If no location is set, prompt immediately
+// Load older messages when user scrolls to the top
+const handleScroll = async () => {
+  if (!chatContainer.value || loadingOlder.value || !chatStore.hasMore) return
+
+  // Trigger when scrolled within 50px of the top
+  if (chatContainer.value.scrollTop < 50) {
+    loadingOlder.value = true
+    const oldHeight = chatContainer.value.scrollHeight
+
+    await chatStore.loadOlderMessages()
+
+    // Keep scroll position stable so it doesn't jump to the top
+    nextTick(() => {
+      if (chatContainer.value) {
+        chatContainer.value.scrollTop = chatContainer.value.scrollHeight - oldHeight
+      }
+      loadingOlder.value = false
+    })
+  }
+}
+
+onMounted(async () => {
+  // Fetch saved location from backend before deciding to show modal
+  await locationStore.fetchLocation()
+
+  // Load chat history
+  await chatStore.loadHistory(1)
+
+  // Ensure scroll reaches the bottom after messages render
+  nextTick(() => {
+    setTimeout(() => {
+      scrollToBottom(false) // false = instant scroll
+    }, 100)
+    // Backup scroll in case images/cards take longer to render
+    setTimeout(() => {
+      scrollToBottom(false)
+    }, 500)
+  })
+
+  // If no location is set (even after checking backend), prompt
   if (!locationStore.hasLocation) {
     showLocationModal.value = true
+  }
+
+  // Attach scroll listener for loading older messages
+  if (chatContainer.value) {
+    chatContainer.value.addEventListener('scroll', handleScroll)
+  }
+})
+
+onUnmounted(() => {
+  if (chatContainer.value) {
+    chatContainer.value.removeEventListener('scroll', handleScroll)
   }
 })
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-background">
+  <div class="h-[100dvh] flex flex-col bg-background overflow-hidden">
     <AppHeader @openLocation="showLocationModal = true" />
 
     <!-- Location Warning Banner -->
@@ -64,11 +117,11 @@ onMounted(() => {
     </div>
 
     <!-- Main Chat Area -->
-    <main class="flex-grow flex flex-col max-w-5xl mx-auto w-full relative">
+    <main class="flex-grow flex flex-col max-w-5xl mx-auto w-full relative min-h-0">
       <!-- Chat Messages -->
       <div 
         ref="chatContainer"
-        class="flex-grow overflow-y-auto px-4 py-8 scroll-smooth"
+        class="flex-grow overflow-y-auto px-4 py-8"
       >
         <!-- Empty State -->
         <div v-if="chatStore.messages.length === 0" class="h-full flex flex-col items-center justify-center text-center max-w-xl mx-auto px-4 mt-20">
@@ -97,6 +150,11 @@ onMounted(() => {
 
         <!-- Message List -->
         <div v-else class="pb-32">
+          <!-- Loading older messages indicator -->
+          <div v-if="loadingOlder" class="flex justify-center py-4">
+            <Loader2 class="w-5 h-5 text-gray-400 animate-spin" />
+          </div>
+
           <ChatMessage 
             v-for="(msg, idx) in chatStore.messages" 
             :key="idx" 

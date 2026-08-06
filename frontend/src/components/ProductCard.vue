@@ -102,12 +102,14 @@ const discountPercent = computed(() => {
       </div>
     </div>
     
-    <!-- Hover Action Overlay -->
+    <!-- Hover Action Overlay (Desktop) -->
     <div v-if="product.deeplink" class="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-300 pointer-events-none"></div>
     
-    <a v-if="product.deeplink" :href="product.deeplink" target="_blank" rel="noopener noreferrer" 
-       class="absolute bottom-4 right-4 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-md hover:bg-primary-light z-10">
+    <div v-if="product.deeplink" class="absolute bottom-4 right-4 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-md z-10 pointer-events-none">
       <ExternalLink class="w-4 h-4" />
-    </a>
+    </div>
+
+    <!-- Full Card Clickable Overlay -->
+    <a v-if="product.deeplink" :href="product.deeplink" target="_blank" rel="noopener noreferrer" class="absolute inset-0 z-20" aria-label="View Product"></a>
   </div>
 </template>

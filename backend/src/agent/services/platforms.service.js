@@ -18,8 +18,6 @@ export async function fetchSupportedPlatforms() {
     return result.platforms;
 }
 
-
-
 export async function searchProduct(productName, latitude, longitude, platform) {
 
 
@@ -39,9 +37,6 @@ export async function searchProduct(productName, latitude, longitude, platform) 
             },
             signal: abortController.signal
         });
-
-
-
         clearTimeout(timeout);
         if (!response.ok) {
             const error = await response.text();
@@ -53,10 +48,6 @@ export async function searchProduct(productName, latitude, longitude, platform) 
         }
 
         const result = await response.json();
-
-
-
-
         if (!result?.data?.products?.length) {
             return [];
         }
@@ -92,7 +83,7 @@ export async function searchProduct(productName, latitude, longitude, platform) 
             image: product.images?.[0] ?? null
         }));
 
-        console.log(productData);
+
 
         return productData;
 
